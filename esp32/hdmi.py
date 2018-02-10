@@ -13,16 +13,16 @@ STATE_B_PINS = [
     machine.Pin(34, machine.Pin.IN),
     machine.Pin(35, machine.Pin.IN),
     machine.Pin(5, machine.Pin.IN),
-    machine.Pin(17, machine.Pin.IN),
+    machine.Pin(25, machine.Pin.IN),
 ]
 
-BT_A = 13
-BT_B = 12
-BT_RST = 14
+BT_A = machine.Pin(13, machine.Pin.OUT, machine.Pin.PULL_DOWN)
+BT_B = machine.Pin(12, machine.Pin.OUT, machine.Pin.PULL_DOWN)
+BT_RST = machine.Pin(14, machine.Pin.OUT, machine.Pin.PULL_DOWN)
 
-machine.Pin(BT_A, machine.Pin.IN)
-machine.Pin(BT_B, machine.Pin.IN)
-machine.Pin(BT_RST, machine.Pin.IN)
+BT_A.value(0)
+BT_B.value(0)
+BT_RST.value(0)
 
 
 def get_state(pins):
@@ -40,9 +40,9 @@ def get_selected(pins):
     return -1
 
 
-
 def next_a():
     next_channel(BT_A, STATE_A_PINS)
+
 
 def next_b():
     next_channel(BT_B, STATE_B_PINS)
@@ -53,18 +53,14 @@ def next_channel(bt, state):
     if selected == -1:
         return -1
 
-    print("selected:", selected)
-    pin = machine.Pin(bt, machine.Pin.OUT)
-
     while True:
         # Push button
-        pin.value(0)
+        bt.value(1)
         next_selected = get_selected(state)
-        print("next selected:", next_selected)
         time.sleep(0.1)
 
         if next_selected != selected:
-            machine.Pin(bt, machine.Pin.IN)
+            bt.value(0)
             return next_selected
 
 
