@@ -74,7 +74,8 @@ def set_channel_b_error(requested_id, next_id):
 
 
 def _make_dispatch(client):
-    def dispatch(client, action):
+
+    def dispatch(action):
         payload = json.dumps(action["payload"])
         topic = config.mqttbasetopic + "/" + action["type"]
 
@@ -87,7 +88,8 @@ def handle(dispatch, action):
     payload = action["payload"]
 
     if action["type"] == GET_CHANNEL_INPUTS_REQUEST:
-        dispatch(client, get_channel_inputs_success())
+        dispatch(get_channel_inputs_success())
+
     elif action["type"] == SET_CHANNEL_A_INPUT_REQUEST:
         channel_id = payload.get("id", 0)
         hdmi.select_a(channel_id)
