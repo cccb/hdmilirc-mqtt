@@ -41,11 +41,11 @@ def get_selected(pins):
 
 
 def next_a():
-    next_channel(BT_A, STATE_A_PINS)
+    return next_channel(BT_A, STATE_A_PINS)
 
 
 def next_b():
-    next_channel(BT_B, STATE_B_PINS)
+    return next_channel(BT_B, STATE_B_PINS)
 
 
 def next_channel(bt, state):
