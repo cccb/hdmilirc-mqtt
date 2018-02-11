@@ -9,18 +9,21 @@ import wifi
 import mqtt
 
 
+# Actions
+GET_CHANNEL_INPUTS_REQUEST = "@hdmi/GET_CHANNEL_INPUTS_REQUEST"
+GET_CHANNEL_INPUTS_SUCCESS = "@hdmi/GET_CHANNEL_INPUTS_SUCCESS"
 
+SET_CHANNEL_A_INPUT_REQUEST = "@hdmi/SET_CHANNEL_A_INPUT_REQUEST"
+SET_CHANNEL_A_INPUT_START   = "@hdmi/SET_CHANNEL_A_INPUT_START"
+SET_CHANNEL_A_INPUT_SUCCESS = "@hdmi/SET_CHANNEL_A_INPUT_SUCCESS"
+SET_CHANNEL_A_INPUT_ERROR   = "@hdmi/SET_CHANNEL_A_INPUT_ERROR"
+SET_CHANNEL_A_INPUT_CANCEL  = "@hdmi/SET_CHANNEL_A_INPUT_CANCEL"
 
-GET_CHANNEL_INPUTS_REQUEST = "GET_CHANNEL_INPUTS_REQUEST"
-GET_CHANNEL_INPUTS_SUCCESS = "GET_CHANNEL_INPUTS_SUCCESS"
-
-SET_CHANNEL_A_INPUT_REQUEST = "SET_CHANNEL_A_INPUT_REQUEST"
-SET_CHANNEL_A_INPUT_SUCCESS = "SET_CHANNEL_A_INPUT_SUCCESS"
-SET_CHANNEL_A_INPUT_ERROR = "SET_CHANNEL_A_INPUT_ERROR"
-
-SET_CHANNEL_B_INPUT_REQUEST = "SET_CHANNEL_B_INPUT_REQUEST"
-SET_CHANNEL_B_INPUT_SUCCESS = "SET_CHANNEL_B_INPUT_SUCCESS"
-SET_CHANNEL_B_INPUT_ERROR = "SET_CHANNEL_B_INPUT_ERROR"
+SET_CHANNEL_B_INPUT_REQUEST = "@hdmi/SET_CHANNEL_B_INPUT_REQUEST"
+SET_CHANNEL_B_INPUT_START   = "@hdmi/SET_CHANNEL_B_INPUT_START"
+SET_CHANNEL_B_INPUT_SUCCESS = "@hdmi/SET_CHANNEL_B_INPUT_SUCCESS"
+SET_CHANNEL_B_INPUT_ERROR   = "@hdmi/SET_CHANNEL_B_INPUT_ERROR"
+SET_CHANNEL_B_INPUT_CANCEL  = "@hdmi/SET_CHANNEL_B_INPUT_CANCEL"
 
 
 #
@@ -30,9 +33,18 @@ def get_channel_inputs_success():
     return {
         "type": GET_CHANNEL_INPUTS_SUCCESS,
         "payload": {
-            "a": hdmi.get_selected(hdmi.STATE_A_PINS),
-            "b": hdmi.get_selected(hdmi.STATE_B_PINS),
+            "a": hdmi.get_selected(hdmi.STATE_A),
+            "b": hdmi.get_selected(hdmi.STATE_B),
         }
+    }
+
+
+def set_channel_a_start(next_id):
+    return {
+        "type": SET_CHANNEL_A_INPUT_START,
+        "payload": {
+            "id": next_id,
+        },
     }
 
 
@@ -45,6 +57,15 @@ def set_channel_a_success(next_id):
     }
 
 
+def set_channel_a_cancel(channel_id):
+    return {
+        "type": SET_CHANNEL_A_INPUT_CANCEL,
+        "payload": {
+            "id": channel_id,
+        },
+    }
+
+
 def set_channel_a_error(requested_id, next_id):
     return {
         "type": SET_CHANNEL_A_INPUT_ERROR,
@@ -53,6 +74,16 @@ def set_channel_a_error(requested_id, next_id):
             "id": next_id,
         },
     }
+
+
+def set_channel_b_start(next_id):
+    return {
+        "type": SET_CHANNEL_B_INPUT_START,
+        "payload": {
+            "id": next_id,
+        },
+    }
+
 
 def set_channel_b_success(next_id):
     return {
@@ -71,6 +102,18 @@ def set_channel_b_error(requested_id, next_id):
             "id": next_id,
         },
     }
+
+
+
+def set_channel_b_cancel(channel_id):
+    return {
+        "type": SET_CHANNEL_B_INPUT_CANCEL,
+        "payload": {
+            "id": channel_id,
+        },
+    }
+
+
 
 
 def _make_dispatch(client):
