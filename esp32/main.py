@@ -135,6 +135,10 @@ def _make_dispatch(client):
     return dispatch
 
 
+def _in_deadtime(last_update):
+    return (time.time() - last_update <= DEADTIME)
+
+
 def handle(dispatch, action):
     global LAST_UPDATE_A_FINISHED
     global LAST_UPDATE_B_FINISHED
