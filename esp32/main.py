@@ -102,7 +102,7 @@ def handle(dispatch, action):
 
     elif action["type"] == SET_CHANNEL_B_INPUT_REQUEST:
         channel_id = payload.get("id", 0)
-        hdmi.select_a(channel_id)
+        hdmi.select_b(channel_id)
 
         next_id = hdmi.get_selected(hdmi.STATE_B_PINS)
         if next_id == channel_id:
