@@ -4,6 +4,9 @@ from ubinascii import hexlify
 import utime
 
 # MQTT Library from: https://gitlab.aachen.ccc.de/mqtt/esp-relay/
+#
+# The origins of this piece of code unfortunatly is a bit
+# unclear...
 
 
 class MQTTException(Exception):
