@@ -9,6 +9,14 @@ import wifi
 import mqtt
 
 
+# Update lock
+DEADTIME = 1.0
+
+# Update lock timer
+LAST_UPDATE_A_FINISHED = 0
+LAST_UPDATE_B_FINISHED = 0
+
+
 # Actions
 GET_CHANNEL_INPUTS_REQUEST = "@hdmi/GET_CHANNEL_INPUTS_REQUEST"
 GET_CHANNEL_INPUTS_SUCCESS = "@hdmi/GET_CHANNEL_INPUTS_SUCCESS"
@@ -128,6 +136,9 @@ def _make_dispatch(client):
 
 
 def handle(dispatch, action):
+    global LAST_UPDATE_A_FINISHED
+    global LAST_UPDATE_B_FINISHED
+
     payload = action["payload"]
 
     if action["type"] == GET_CHANNEL_INPUTS_REQUEST:
@@ -135,23 +146,48 @@ def handle(dispatch, action):
 
     elif action["type"] == SET_CHANNEL_A_INPUT_REQUEST:
         channel_id = payload.get("id", 0)
+
+        # Check deadtime
+        if _in_deadtime(LAST_UPDATE_A_FINISHED):
+            dispatch(set_channel_a_cancel(channel_id))
+            return
+
+        # Begin update
+        dispatch(set_channel_a_start(channel_id))
+
+        # This might take a while
         hdmi.select_a(channel_id)
 
-        next_id = hdmi.get_selected(hdmi.STATE_A_PINS)
+        # Check result
+        next_id = hdmi.get_selected(hdmi.STATE_A)
         if next_id == channel_id:
             dispatch(set_channel_a_success(next_id))
         else:
             dispatch(set_channel_a_error(channel_id, next_id))
 
+        LAST_UPDATE_A_FINISHED = time.time()
+
+
     elif action["type"] == SET_CHANNEL_B_INPUT_REQUEST:
         channel_id = payload.get("id", 0)
+
+        # Check deadtime
+        if _in_deadtime(LAST_UPDATE_B_FINISHED):
+            dispatch(set_channel_b_cancel(channel_id))
+            return
+
+        # Begin
+        dispatch(set_channel_b_start(channel_id))
         hdmi.select_b(channel_id)
 
-        next_id = hdmi.get_selected(hdmi.STATE_B_PINS)
+        next_id = hdmi.get_selected(hdmi.STATE_B)
         if next_id == channel_id:
             dispatch(set_channel_b_success(next_id))
         else:
             dispatch(set_channel_b_error(channel_id, next_id))
+
+        LAST_UPDATE_B_FINISHED = time.time()
+
 
 
 def _make_mqtt_callback(client):
