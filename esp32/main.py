@@ -1,6 +1,6 @@
 
-import time
-import json
+import utime as time
+import ujson as json
 
 import machine
 
@@ -32,6 +32,38 @@ SET_CHANNEL_B_INPUT_START   = "SET_CHANNEL_B_INPUT_START"
 SET_CHANNEL_B_INPUT_SUCCESS = "SET_CHANNEL_B_INPUT_SUCCESS"
 SET_CHANNEL_B_INPUT_ERROR   = "SET_CHANNEL_B_INPUT_ERROR"
 SET_CHANNEL_B_INPUT_CANCEL  = "SET_CHANNEL_B_INPUT_CANCEL"
+
+
+# Meta
+PING = "PING"
+PONG = "PONG"
+WHOIS = "WHOIS"
+IAMA = "IAMA"
+
+STARTED_AT = int(time.time() * 1000)
+HANDLE = "hdmimatrix@mainhall"
+VERSION = "1.0.0"
+
+def iama():
+    return {
+        "type": IAMA,
+        "payload": {
+            "name": "hdmimatrix",
+            "handle": HANDLE,
+            "version": VERSION,
+            "description": "HDMI-Matrix to MQTT bridge",
+            "started_at": STARTED_AT,
+        },
+    }
+
+def pong():
+    return {
+        "type": PONG,
+        "payload": {
+            "handle": HANDLE,
+            "timestamp":  int(time.time() * 1000),
+        }
+    }
 
 
 #
@@ -132,7 +164,13 @@ def _make_dispatch(client):
 
         client.publish(topic, payload)
 
-    return dispatch
+    def dispatch_meta(action):
+        payload = json.dumps(action["payload"])
+        topic = config.mqttmetatopic + "/" + action["type"]
+
+        client.publish(topic, payload)
+
+    return dispatch, dispatch_meta
 
 
 def _in_deadtime(last_update):
@@ -193,9 +231,32 @@ def handle(dispatch, action):
         LAST_UPDATE_B_FINISHED = time.time()
 
 
+def handle_meta(dispatch, action):
+    """
+    Implement meta actions / service discovery
+    """
+    if action["type"] == PING:
+        _handle_ping(dispatch, action)
+    elif action["type"] == WHOIS:
+        _handle_whois(dispatch, action)
+
+
+def _handle_ping(dispatch, action):
+    """Reply with PONG"""
+    handle = "hdmimatrix@dummy"
+    if action["payload"] == handle or action["payload"] == "*":
+        dispatch(pong())
+
+
+def _handle_whois(dispatch, action, manifest):
+    """Reply with iama"""
+    handle = "hdmimatrix@dummy"
+    if action["payload"] == handle or action["payload"] == "*":
+        dispatch(iama())
+
 
 def _make_mqtt_callback(client):
-    dispatch = _make_dispatch(client)
+    dispatch, meta_dispatch = _make_dispatch(client)
 
     def mqtt_callback(topic, msg):
         topic = topic.decode()
@@ -209,6 +270,8 @@ def _make_mqtt_callback(client):
         }
 
         handle(dispatch, action)
+        handle_meta(meta_dispatch, action)
+
 
     return mqtt_callback
 
