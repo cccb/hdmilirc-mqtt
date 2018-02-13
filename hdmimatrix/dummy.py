@@ -5,6 +5,7 @@ Hdmi Matrix simulation
 """
 
 import time
+from datetime import datetime
 
 from llama import mqtt
 
@@ -33,6 +34,10 @@ SET_CHANNEL_B_INPUT_SUCCESS = "@hdmi/SET_CHANNEL_B_INPUT_SUCCESS"
 SET_CHANNEL_B_INPUT_ERROR   = "@hdmi/SET_CHANNEL_B_INPUT_ERROR"
 SET_CHANNEL_B_INPUT_CANCEL  = "@hdmi/SET_CHANNEL_B_INPUT_CANCEL"
 
+PING = "@meta/PING"
+PONG = "@meta/PONG"
+WHOIS = "@meta/WHOIS"
+IAMA = "@meta/IAMA"
 
 #
 # Action creators
@@ -181,18 +186,69 @@ def handle(dispatch, action):
         LAST_UPDATE_B_FINISHED = time.time()
 
 
+def pong(handle):
+    return {
+        "type": PONG,
+        "payload": {
+            "handle": handle,
+            "timestamp": int(datetime.utcnow().timestamp() * 1000)
+        }
+    }
+
+
+def iama(manifest):
+    return {
+        "type": IAMA,
+        "payload": manifest,
+    }
+
+
+def handle_meta(dispatch, action, manifest):
+    """
+    Implement meta actions / service discovery
+    """
+    if action["type"] == PING:
+        _handle_ping(dispatch, action)
+    elif action["type"] == WHOIS:
+        _handle_whois(dispatch, action, manifest)
+
+
+def _handle_ping(dispatch, action):
+    """Reply with PONG"""
+    handle = "hdmimatrix@dummy"
+    if action["payload"] == handle or action["payload"] == "*":
+        dispatch(pong(handle))
+
+
+def _handle_whois(dispatch, action, manifest):
+    """Reply with iama"""
+    handle = "hdmimatrix@dummy"
+    if action["payload"] == handle or action["payload"] == "*":
+        dispatch(iama(manifest))
+
+
 def main(args):
 
     dispatch, receive = mqtt.connect("localhost:1883", {
         "hdmi": "v1/mainhall/hdmimatrix",
+        "meta": "v1/_meta",
     })
 
     print("MQTT connected.")
 
+    iama = {
+        "handle": "hdmimatrix@dummy",
+        "name": "hdmimatrix-mqtt",
+        "version": "0.0.1",
+        "description": "Bridge HDMI-Matrix to MQTT",
+        "started_at": int(datetime.utcnow().timestamp() * 1000),
+    }
+
+
     for action in receive():
         print("Handling action: {}".format(action))
         handle(dispatch, action)
-
+        handle_meta(dispatch, action, iama)
 
 if __name__ == "__main__":
     main(None)
