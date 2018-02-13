@@ -1,14 +1,7 @@
-pins = [
-		{'pin': 27, 'name': 'foo1'},
-		{'pin': 26, 'name': 'foo2'},
-		{'pin': 25, 'name': 'foo3'},
-		{'pin': 33, 'name': 'foo4'}
-	]
-#ssid = "CCCAC_PSK_2.4GHz"
 ssid = "CCCAC_OPEN_2.4GHz"
-#password = "23cccac42"
 password = ""
 ifconfig = None #None for dhcp
-mqttserver = "mqtt.space.aachen.ccc.de"
+mqttserver = "mqtt.club.berlin.ccc.de"
 mqttport = 1883
-mqttbasetopic = 'relay/test'
+mqttbasetopic = 'v1/mainhall/hdmimatrix'
+mqttmetatopic = 'v1/_meta'
