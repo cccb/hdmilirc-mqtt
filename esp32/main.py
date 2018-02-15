@@ -7,6 +7,7 @@ import machine
 import config
 import wifi
 import mqtt
+import hdmi
 
 
 # Update lock
@@ -73,8 +74,8 @@ def get_channel_inputs_success():
     return {
         "type": GET_CHANNEL_INPUTS_SUCCESS,
         "payload": {
-            "a": hdmi.get_selected(hdmi.STATE_A),
-            "b": hdmi.get_selected(hdmi.STATE_B),
+            "a": hdmi.get_selected(hdmi.STATE_A_PINS),
+            "b": hdmi.get_selected(hdmi.STATE_B_PINS),
         }
     }
 
@@ -201,7 +202,7 @@ def handle(dispatch, action):
         hdmi.select_a(channel_id)
 
         # Check result
-        next_id = hdmi.get_selected(hdmi.STATE_A)
+        next_id = hdmi.get_selected(hdmi.STATE_A_PINS)
         if next_id == channel_id:
             dispatch(set_channel_a_success(next_id))
         else:
@@ -222,7 +223,7 @@ def handle(dispatch, action):
         dispatch(set_channel_b_start(channel_id))
         hdmi.select_b(channel_id)
 
-        next_id = hdmi.get_selected(hdmi.STATE_B)
+        next_id = hdmi.get_selected(hdmi.STATE_B_PINS)
         if next_id == channel_id:
             dispatch(set_channel_b_success(next_id))
         else:
@@ -248,7 +249,7 @@ def _handle_ping(dispatch, action):
         dispatch(pong())
 
 
-def _handle_whois(dispatch, action, manifest):
+def _handle_whois(dispatch, action):
     """Reply with iama"""
     handle = "hdmimatrix@dummy"
     if action["payload"] == handle or action["payload"] == "*":
@@ -285,8 +286,14 @@ def _mqtt_connect(c):
                 topic = b'{}/#'.format(config.mqttbasetopic)
                 print('Subscribe to {}'.format(topic))
                 c.subscribe(topic)
+
+                topic = b'{}/#'.format(config.mqttmetatopic)
+                print('Subscribe to {}'.format(topic))
+                c.subscribe(topic)
+
                 break
         except Exception as e:
+            print("mqtt connect exception")
             print(e)
             pass
         time.sleep(0.25)
