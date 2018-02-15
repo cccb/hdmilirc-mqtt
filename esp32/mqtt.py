@@ -174,9 +174,11 @@ class MQTTClientSimple:
     # Subscribed messages are delivered to a callback previously
     # set by .set_callback() method. Other (internal) MQTT
     # messages processed internally.
-    def wait_msg(self):
+    def wait_msg(self, timeout=None):
         res = self.sock.read(1)
-        self.sock.setblocking(True)
+
+        self.sock.settimeout(timeout)
+
         if res is None:
             return None
         if res == b"":
