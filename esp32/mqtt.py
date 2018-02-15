@@ -60,6 +60,9 @@ class MQTTClientSimple:
         self.lw_retain = retain
 
     def connect(self, clean_session=True):
+        if self.sock:
+            self.sock.close()
+
         self.sock = socket.socket()
         addr = socket.getaddrinfo(self.server, self.port)[0][-1]
         self.sock.connect(addr)
