@@ -175,12 +175,12 @@ class MQTTClientSimple:
     # set by .set_callback() method. Other (internal) MQTT
     # messages processed internally.
     def wait_msg(self, timeout=None):
-        res = self.sock.read(1)
-
         self.sock.settimeout(timeout)
 
+        res = self.sock.read(1)
+
         if res is None:
-            return None
+            self.cb(None, None)
         if res == b"":
             raise OSError(-1)
         if res == b"\xd0":  # PINGRESP
