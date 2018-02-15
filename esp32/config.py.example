@@ -1,4 +1,4 @@
-ssid = "CCCAC_OPEN_2.4GHz"
+ssid = "ssid"
 password = ""
 ifconfig = None #None for dhcp
 mqttserver = "mqtt.club.berlin.ccc.de"
