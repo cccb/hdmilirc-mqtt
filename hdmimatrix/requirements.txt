@@ -1,0 +1,2 @@
+pyserial
+llama-mqtt
