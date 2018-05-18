@@ -95,21 +95,46 @@ def _decode_index(packet):
     return packet[6] - 1
 
 
+def _decode_bool(packet):
+    """Decode boolean value"""
+    return packet[6] == 0x00
+
+
 def get_selected_source(conn):
     """Retrieve the selected source id. Zero indexed."""
-    response = request(conn, GET_INPUT_PAYLOAD)
-    if not _validate_packet(response):
+    packet = _request(conn, GET_INPUT_PAYLOAD)
+    if not _validate_packet(packet):
         return -1
 
-    return _decode_index(response)
+    return _decode_index(packet)
 
 
 def get_selected_audio_mode(conn):
     """Get the selected audio mode"""
-    response = request(conn, GET_AUDIO_PAYLOAD);
-    if not _validate_packet(response):
+    response = _request(conn, GET_AUDIO_PAYLOAD);
+    if not _validate_packet(packet):
         return -1
 
-    return _decode_index(response)
+    return _decode_index(packet)
 
+
+def get_input_connection_state(conn):
+    """
+    Retrieve connected state.
+
+    :param conn: The serial connection
+    :type conn: serial.Serial
+
+    :rtype: list of bool
+    """
+    packets = [_request(conn, GET_INPUT_STATE_0),
+               _request(conn, GET_INPUT_STATE_1),
+               _request(conn, GET_INPUT_STATE_2),
+               _request(conn, GET_INPUT_STATE_3)]
+
+    validation = [_validate_packet(p) for p in packets]
+    if False in validation:
+        return []
+
+    return [_decode_bool(p) for p in packets]
 

@@ -40,3 +40,10 @@ def test_decode_index():
     assert switch._decode_index(INPUT_1_SELECTED) == 1
     assert switch._decode_index(INPUT_2_SELECTED) == 2
 
+
+def test_decode_bool():
+    assert switch._decode_bool(INPUT_1_CONNECTED) == True
+    assert switch._decode_bool(INPUT_1_DISCONNECTED) == False
+
+
+
