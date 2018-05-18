@@ -90,35 +90,26 @@ def _validate_packet(packet):
     return _checksum(packet) == packet[-1]
 
 
-def _decode_integer_value(packet):
-    """
-    Decode integer value of response packet.
-    It is most likely encoded at offset 7
-    """
-    return packet[7]
+def _decode_index(packet):
+    """Decode integer index value of response packet."""
+    return packet[6] - 1
 
 
 def get_selected_source(conn):
+    """Retrieve the selected source id. Zero indexed."""
     response = request(conn, GET_INPUT_PAYLOAD)
+    if not _validate_packet(response):
+        return -1
 
-    return _decode_selected_source(response)
+    return _decode_index(response)
 
 
 def get_selected_audio_mode(conn):
+    """Get the selected audio mode"""
     response = request(conn, GET_AUDIO_PAYLOAD);
+    if not _validate_packet(response):
+        return -1
 
-    return _decode_selected_audio_mode(response)
+    return _decode_index(response)
 
-
-
-
-# Responses:
-AUTO_OFF = b'\xa5\x5b\x01\r\xf0\x00\x00\x00\x00\x00\x00\x00\x02'
-AUTO_ON = b'\xa5\x5b\x01\r\x0f\x00\x00\x00\x00\x00\x00\x00\xe3'
-
-INPUT_0_DISCONNECTED = b'\xa5\x5b\x01\x04\x01\x00\xff\x00\x00\x00\x00\x00\xfb'
-INPUT_0_CONNECTED    = b'\xa5\x5b\x01\x04\x01\x00\x00\x00\x00\x00\x00\x00\xfa'
-
-INPUT_1_DISCONNECTED = b'\xa5\x5b\x01\x04\x02\x00\xff\x00\x00\x00\x00\x00\xfa'
-INPUT_1_CONNECTED = b'\xa5\x5b\x01\x04\x02\x00\x00\x00\x00\x00\x00\x00\xf9'
 
