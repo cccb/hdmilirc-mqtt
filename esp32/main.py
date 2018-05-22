@@ -12,6 +12,7 @@ import hdmi
 
 # Update lock
 DEADTIME = 1.0
+WORKING = False
 
 # Update lock timer
 LAST_UPDATE_A_FINISHED = 0
@@ -185,6 +186,7 @@ def _in_deadtime(last_update):
 def handle(dispatch, action):
     global LAST_UPDATE_A_FINISHED
     global LAST_UPDATE_B_FINISHED
+    global WORKING
 
     payload = action["payload"]
 
@@ -196,11 +198,13 @@ def handle(dispatch, action):
 
         # Check deadtime
         if _in_deadtime(LAST_UPDATE_A_FINISHED):
+            WORKING = False
             dispatch(set_channel_a_cancel(channel_id))
             return
 
         # Begin update
         dispatch(set_channel_a_start(channel_id))
+        WORKING = True
 
         # This might take a while
         hdmi.select_a(channel_id)
@@ -212,6 +216,7 @@ def handle(dispatch, action):
         else:
             dispatch(set_channel_a_error(channel_id, next_id))
 
+        WORKING = False
         LAST_UPDATE_A_FINISHED = time.time()
 
 
@@ -220,11 +225,14 @@ def handle(dispatch, action):
 
         # Check deadtime
         if _in_deadtime(LAST_UPDATE_B_FINISHED):
+            WORKING = False
             dispatch(set_channel_b_cancel(channel_id))
             return
 
         # Begin
         dispatch(set_channel_b_start(channel_id))
+        WORKING = True
+
         hdmi.select_b(channel_id)
 
         next_id = hdmi.get_selected(hdmi.STATE_B_PINS)
@@ -234,6 +242,7 @@ def handle(dispatch, action):
             dispatch(set_channel_b_error(channel_id, next_id))
 
         LAST_UPDATE_B_FINISHED = time.time()
+        WORKING = False
 
 
 def handle_meta(dispatch, action):
@@ -260,10 +269,38 @@ def _handle_whois(dispatch, action):
         dispatch(iama())
 
 
+def watch_state(dispatch):
+    global STATE_A
+    global STATE_B
+    global WORKING
+
+    if WORKING:
+        return
+
+    next_a = hdmi.get_state(hdmi.STATE_A_PINS)
+    next_b = hdmi.get_state(hdmi.STATE_B_PINS)
+
+    next_selected_a = hdmi.get_selected(hdmi.STATE_A_PINS)
+    next_selected_b = hdmi.get_selected(hdmi.STATE_B_PINS)
+
+    if next_selected_a != -1 and STATE_A != next_a:
+        dispatch(set_channel_a_success(next_selected_a))
+        STATE_A = next_a
+
+    if next_selected_b != -1 and STATE_B != next_b:
+        dispatch(set_channel_b_success(next_selected_b))
+        STATE_B = next_b
+
+
 def _make_mqtt_callback(client):
     dispatch, meta_dispatch = _make_dispatch(client)
 
     def mqtt_callback(topic, msg):
+        if topic == None:
+            # Check for external state change
+            watch_state(dispatch)
+            return
+
         topic = topic.decode()
         payload = json.loads(msg.decode())
 
@@ -324,7 +361,7 @@ def main():
     _mqtt_connect(c)
 
     while True:
-        c.wait_msg()
+        c.wait_msg(timeout=1.0/25.0)
 
 
 try:

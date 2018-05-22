@@ -181,6 +181,7 @@ class MQTTClientSimple:
 
         if res is None:
             self.cb(None, None)
+            return
         if res == b"":
             raise OSError(-1)
         if res == b"\xd0":  # PINGRESP
@@ -248,10 +249,10 @@ class MQTTClient(MQTTClientSimple):
                 self.log(False, e)
             self.reconnect()
 
-    def wait_msg(self):
+    def wait_msg(self, timeout=None):
         while 1:
             try:
-                return super().wait_msg()
+                return super().wait_msg(timeout=timeout)
             except OSError as e:
                 self.log(False, e)
             self.reconnect()
