@@ -20,7 +20,7 @@ import time
 #
 
 GET_SELECTED_INPUT = b'\xA5\x5B\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\xFC'
-GET_SELECTED_AUDIO = b'\xA5\x5B\x01\x0C\x01\x00\x00\x00\x00\x00\x00\x00\xF2'
+GET_SELECTED_AUDIO_MODE = b'\xA5\x5B\x01\x0C\x01\x00\x00\x00\x00\x00\x00\x00\xF2'
 
 SELECT_INPUT_0 = b'\xA5\x5B\x02\x03\x01\x00\x01\x00\x00\x00\x00\x00\xF9'
 SELECT_INPUT_1 = b'\xA5\x5B\x02\x03\x02\x00\x01\x00\x00\x00\x00\x00\xF8'
@@ -72,7 +72,9 @@ def _request(conn, payload):
     time.sleep(0.001)
     conn.write(payload[1:])
 
-    return conn.read(response_len)
+    res = conn.read(13)
+
+    return res
 
 
 def _checksum(packet):
@@ -139,7 +141,7 @@ def select_source(conn, source_id):
 
 def get_selected_source(conn):
     """Retrieve the selected source id. Zero indexed."""
-    packet = _request(conn, GET_INPUT_PAYLOAD)
+    packet = _request(conn, GET_SELECTED_INPUT)
     if not _validate_packet(packet):
         raise ChecksumError()
 
@@ -173,7 +175,7 @@ def select_audio_mode(conn, audio_mode):
 
 def get_selected_audio_mode(conn):
     """Get the selected audio mode"""
-    response = _request(conn, GET_AUDIO_PAYLOAD);
+    packet = _request(conn, GET_SELECTED_AUDIO_MODE);
     if not _validate_packet(packet):
         raise ChecksumError()
 
@@ -221,11 +223,8 @@ def get_source_connection_state(conn):
     packets = [_request(conn, GET_INPUT_STATE_0),
                _request(conn, GET_INPUT_STATE_1),
                _request(conn, GET_INPUT_STATE_2),
-               _request(conn, GET_INPUT_STATE_3)]
-
-    validation = [_validate_packet(p) for p in packets]
-    if False in validation:
-        return []
+               _request(conn, GET_INPUT_STATE_3),
+               _request(conn, GET_OUTPUT_STATE)]
 
     return [_decode_bool(p) for p in packets]
 
