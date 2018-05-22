@@ -105,3 +105,5 @@ config.py
 *.swo
 *.swp
 
+# $WTF
+*~
