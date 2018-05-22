@@ -58,6 +58,23 @@ AUDIO_MODE_7_1 = 3
 class ChecksumError(ValueError):
     pass
 
+
+def connect(path):
+    """
+    Open a configured serial connection with a given path.
+    Baudrate and timeout are set as needed.
+
+    :param path: The path to the serial device. E.g. /dev/ttyUSB0
+    :type path: str
+
+    :returns: A configured serial connection
+    :rtype: serial.Serial
+    """
+    conn = serial.Serial(path, baudrate=19200, timeout=1.5)
+
+    return conn
+
+
 def _request(conn, payload):
     """
     Query HDMI switch via serial interface.
