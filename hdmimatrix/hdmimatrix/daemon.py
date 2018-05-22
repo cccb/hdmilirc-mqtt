@@ -30,7 +30,7 @@ def main(args):
     # Open serial connection
     conn = switch.connect(args.serial)
 
-    # Open MQTT connection 
+    # Open MQTT connection
     dispatch, receive = mqtt.connect(args.broker, {
         "hdmi": args.topic,
     })
@@ -40,4 +40,4 @@ def main(args):
     # Main loop: Poll HDMI matrix, check for state updates,
     # Dispatch events on change.
     service.handle(conn, dispatch, receive(timeout=1.0))
-    
+

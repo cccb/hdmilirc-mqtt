@@ -88,7 +88,7 @@ def handle(conn, dispatch, actions):
             selected_source = int(action["payload"].get("input_id", 0))
             try:
                 switch.select_source(conn, selected_source)
-                dispatch(hdmi_actions.select_input_success(selected_source)) 
+                dispatch(hdmi_actions.select_input_success(selected_source))
 
                 state["selected_source"] = selected_source
             except:
