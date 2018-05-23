@@ -150,13 +150,13 @@ def handle(conn, dispatch, actions):
 
         elif action["type"] == hdmi_actions.GET_AUTO_SELECT_REQUEST:
             dispatch(
-                hdmi_action.get_auto_select_success(
+                hdmi_actions.get_auto_select_success(
                     state["auto_select"]))
 
         elif action["type"] == hdmi_actions.GET_AUDIO_MODE_REQUEST:
             dispatch(
                 hdmi_actions.get_audio_mode_success(
-                    state["selected_audio_mode"]))
+                    state["audio_mode"]))
 
         elif action["type"] == hdmi_actions.GET_CONNECTION_STATES_REQUEST:
             dispatch(
@@ -167,16 +167,18 @@ def handle(conn, dispatch, actions):
         elif action["type"] == hdmi_actions.SET_SELECTED_INPUT_REQUEST:
             selected_input = int(action["payload"].get("input_id", 0))
             try:
-                switch.select_input(conn, selected_input)
+                switch.select_source(conn, selected_input)
+                state["selected_input"] = selected_input
+
                 dispatch(
                     hdmi_actions.set_selected_input_success(
                         selected_input))
 
-                state["selected_input"] = selected_input
-            except:
+
+            except Exception as e:
                 dispatch(
                     hdmi_actions.set_selected_input_error(
-                        selected_input, "Could not set selected input"))
+                        selected_input, str(e)))
 
 
         # Audio Mode
@@ -184,8 +186,11 @@ def handle(conn, dispatch, actions):
             audio_mode = int(action["payload"].get("mode_id", 0))
             try:
                 switch.select_audio_mode(conn, audio_mode)
+                state["audio_mode"] = audio_mode
+
                 dispatch(
                     hdmi_actions.set_audio_mode_success(audio_mode))
+
             except Exception as e:
                 dispatch(
                     hdmi_actions.set_audio_mode_error(
@@ -196,6 +201,8 @@ def handle(conn, dispatch, actions):
             enabled = action["payload"].get("enabled", False)
             try:
                 switch.set_auto_switch(conn, enabled)
+                state["auto_select"] = enabled
+
                 dispatch(
                     hdmi_actions.set_auto_select_success(enabled))
 
