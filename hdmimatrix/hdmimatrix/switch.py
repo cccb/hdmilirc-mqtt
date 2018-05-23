@@ -160,7 +160,7 @@ def select_source(conn, source_id):
         raise ChecksumError()
 
 
-def get_selected_source(conn):
+def get_selected_input(conn):
     """Retrieve the selected source id. Zero indexed."""
     packet = _request(conn, GET_SELECTED_INPUT)
     if not _validate_packet(packet):
@@ -232,7 +232,7 @@ def get_auto_switch_state(conn):
     return _decode_bool(packet)
 
 
-def get_source_connection_state(conn):
+def get_connection_state(conn):
     """
     Retrieve connected state.
 
