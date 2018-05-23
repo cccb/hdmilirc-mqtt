@@ -4,8 +4,9 @@ import logging
 
 from llama import mqtt
 
-from hdmimatrix import switch
+from hdmimatrix import switch, switch_dummy
 from hdmimatrix import service
+
 
 def parse_args():
     """Parse commandline arguments"""
@@ -24,11 +25,15 @@ def parse_args():
 
 
 def main(args):
+    """Main application entry point"""
     print("HDMI to MQTT\t\t\t\t\t\t\tv.0.23.42")
     print()
 
     # Open serial connection
-    conn = switch.connect(args.serial)
+    if args.serial == "dummy":
+        conn = switch_dummy.connect()
+    else:
+        conn = switch.connect(args.serial)
 
     # Open MQTT connection
     dispatch, receive = mqtt.connect(args.broker, {
@@ -40,4 +45,3 @@ def main(args):
     # Main loop: Poll HDMI matrix, check for state updates,
     # Dispatch events on change.
     service.handle(conn, dispatch, receive(timeout=1.0))
-

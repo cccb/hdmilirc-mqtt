@@ -33,17 +33,17 @@ def _dispatch_state_diff(dispatch, state, next_state):
 
     if state["auto_select"] != next_state["auto_select"]:
         dispatch(
-            hdmi_actions.get_auto_select_success(
+            hdmi_actions.update_auto_select_success(
                 next_state["auto_select"]))
 
     if state["selected_source"] != next_state["selected_source"]:
         dispatch(
-            hdmi_actions.select_input_success(
+            hdmi_actions.update_selected_input_success(
                 next_state["selected_source"]))
 
     if state["selected_audio_mode"] != next_state["selected_audio_mode"]:
         dispatch(
-            hdmi_actions.get_selected_audio_mode_success(
+            hdmi_actions.update_audio_mode_success(
                 next_state["selected_audio_mode"]))
 
 
@@ -73,9 +73,9 @@ def handle(conn, dispatch, actions):
                 hdmi_action.get_auto_select_success(
                     state["auto_select"]))
 
-        elif action["type"] == hdmi_actions.GET_SELECTED_AUDIO_MODE_REQUEST:
+        elif action["type"] == hdmi_actions.GET_AUDIO_MODE_REQUEST:
             dispatch(
-                hdmi_actions.get_selected_audio_mode_success(
+                hdmi_actions.get_audio_mode_success(
                     state["selected_audio_mode"]))
 
         elif action["type"] == hdmi_actions.GET_CONNECTION_STATES_REQUEST:
@@ -84,11 +84,13 @@ def handle(conn, dispatch, actions):
                     state["connections"]))
 
         # Changing
-        elif action["type"] == hdmi_actions.SELECT_INPUT_REQUEST:
+        elif action["type"] == hdmi_actions.UPDATE_SELECTED_INPUT_REQUEST:
             selected_source = int(action["payload"].get("input_id", 0))
             try:
                 switch.select_source(conn, selected_source)
-                dispatch(hdmi_actions.select_input_success(selected_source))
+                dispatch(
+                    hdmi_actions.update_selected_input_success(
+                        selected_source))
 
                 state["selected_source"] = selected_source
             except:
