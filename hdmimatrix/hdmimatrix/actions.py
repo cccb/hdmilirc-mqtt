@@ -131,6 +131,7 @@ def set_audio_mode_success(mode_id):
         "type": SET_AUDIO_MODE_SUCCESS,
         "payload": {
             "mode_id": mode_id,
+            "mode": switch.resolve_audio_mode(mode_id),
         },
     }
 
