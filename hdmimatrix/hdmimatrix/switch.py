@@ -3,9 +3,9 @@ Implements the serial communication protocoll,
 which is used by the Ligawo HDR Switch 4x1
 """
 
+import time
 
 import serial
-import time
 
 # What we found so far:
 #
@@ -103,7 +103,11 @@ def _checksum(packet):
 
     :rtype: int
     """
-    return packet[0] + packet[1] - sum(packet[2:12])
+    chk = packet[0] + packet[1] - sum(packet[2:12])
+    if chk < 0:
+        chk = 256 + chk # Hmm hmm hmm
+
+    return chk
 
 
 def _validate_packet(packet):
@@ -192,7 +196,7 @@ def select_audio_mode(conn, audio_mode):
 
 def get_selected_audio_mode(conn):
     """Get the selected audio mode"""
-    packet = _request(conn, GET_SELECTED_AUDIO_MODE);
+    packet = _request(conn, GET_SELECTED_AUDIO_MODE)
     if not _validate_packet(packet):
         raise ChecksumError()
 
@@ -245,3 +249,22 @@ def get_source_connection_state(conn):
 
     return [_decode_bool(p) for p in packets]
 
+
+def resolve_audio_mode(mode_id):
+    """
+    Translate audio mode_id into some human readable string
+
+    :param mode_id: An enum of audio modes
+    :type mode_id: int
+
+    :returns: The resolved audio mode string
+    :rtype: str
+    """
+    modes = {
+        AUDIO_MODE_AUTO: "auto",
+        AUDIO_MODE_STEREO: "stereo",
+        AUDIO_MODE_5_1: "5.1",
+        AUDIO_MODE_7_1: "7.1",
+    }
+
+    return modes[mode_id]
