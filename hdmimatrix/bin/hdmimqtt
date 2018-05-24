@@ -1,0 +1,12 @@
+#!/bin/bash
+
+BASE_DIR=$(dirname $0)/../
+cd $BASE_DIR
+
+# VIRTUAL_BASE=venv/
+
+# Activate
+# source $VIRTUAL_BASE/bin/activate
+
+exec python3 -m hdmimatrix $@ 
+
