@@ -130,9 +130,14 @@ def _decode_index(packet):
     return packet[6] - 1
 
 
-def _decode_bool(packet):
+def _decode_bool(packet, offset=6):
     """Decode boolean value"""
     return packet[6] == 0x00
+
+
+def _decode_toggle(packet):
+    """Decode boolean toggle value"""
+    return packet[4] == 0x0f
 
 
 def select_source(conn, source_id):
@@ -229,7 +234,7 @@ def get_auto_switch_state(conn):
     if not _validate_packet(packet):
         raise ChecksumError()
 
-    return _decode_bool(packet)
+    return _decode_toggle(packet)
 
 
 def get_connection_state(conn):
