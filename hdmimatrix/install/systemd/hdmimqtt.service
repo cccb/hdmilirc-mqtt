@@ -1,0 +1,14 @@
+[Unit]
+Description=HDMISwitchMQTT
+Wants=network.target
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/ccc/hdmimatrix-mqtt/hdmimatrix/bin/hdmimqtt -t v1/mainhall/hdmimatrix -b mqtt.club.berlin.ccc.de -s /dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
