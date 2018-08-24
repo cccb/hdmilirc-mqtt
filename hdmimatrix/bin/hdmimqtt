@@ -1,12 +1,19 @@
-#!/bin/bash
+#!/bin/sh
 
+# Everything should happen relative to the application path
 BASE_DIR=$(dirname $0)/../
 cd $BASE_DIR
 
-# VIRTUAL_BASE=venv/
+VIRTUAL_BASE=${BASE_DIR}venv/
 
-# Activate
-# source $VIRTUAL_BASE/bin/activate
+if [ -d ${VIRTUAL_BASE} ] ; then 
+    # just activate
+    source ${VIRTUAL_BASE}bin/activate
+else
+    # creating virtual env if not present
+    python3 -m venv --copies ${VIRTUAL_BASE}
+    source ${VIRTUAL_BASE}bin/activate
+    pip3 install -r ${BASE_DIR}requirements.txt
+fi
 
-exec python3 -m hdmimatrix $@ 
-
+exec python3 -m hdmimatrix $@
